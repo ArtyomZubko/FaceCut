@@ -1,6 +1,7 @@
 import sys, time, cv2 as cv, numpy as np
 
-
+#haarcascade_frontalface_default.xml file must
+#be in the same folder with test.py
 face_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
 
 filename = 0
@@ -19,11 +20,11 @@ while True:
  
  cv.imshow("test", img)
 
- if cv.waitKey(10) == 49: 
+ if cv.waitKey(10) == 49: #capture face when "1" button is pressed
      cropped = img[y-1: (y + h)-1, x+2: (x + w)-1]
      cv.imshow("Cropped image", cropped)
 
-     final_wide = 200 
+     final_wide = 200 #setting image scaling
      r = float(final_wide) / cropped.shape[1]
      dim = (final_wide, int(cropped.shape[0] * r))
      resized_pic = cv.resize(cropped, dim, interpolation = cv.INTER_AREA)
