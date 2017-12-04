@@ -1,5 +1,6 @@
 import sys, time, cv2 as cv, numpy as np
 face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
+userFace = cv.imread('e7f8a296d3.jpg')
 
 filename = 0
 
@@ -16,10 +17,23 @@ while True:
 
  faces = face_cascade.detectMultiScale(img, 1.3, 5)
 
- for (x,y,w,h) in faces:
+ for (x,y,w,h) in faces: 
     tempy = int((h-(h*0.56))/2)
     tempx = int((w-(w*0.86))/2)
-    cv.rectangle(img,(int(x-tempx),int(y-tempy)),(x+w,y+h+tempy),(0,255,0),2)
+
+    if x-tempx < 0:
+        continue
+    if y-tempy < 0:
+        continue
+    #if x > w:
+    #    continue
+    #if y > h + tempy - 3:
+    #    continue
+    userFaceRecized = cv.resize(userFace,  (w + tempx,h+tempy * 2), interpolation = cv.INTER_AREA)
+    #mask = cv.threshold(userFaceRecized, 10, 255, cv.THRESH_BINARY)
+    #userFaceRecized = cv.bitwise_not(mask)
+    img[y-tempy: (y + h + tempy), x-tempx: (x + w)] = userFaceRecized
+    #cv.rectangle(img,(int(x-tempx),int(y-tempy)),(x+w,y+h+tempy),(0,255,0),2)
  
  cv.imshow("test", img)
 
