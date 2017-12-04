@@ -1,5 +1,5 @@
 import sys, time, cv2 as cv, numpy as np
-import multiprocessing
+from multiprocessing import Process
 import serial
 face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
 ser = serial.Serial('/dev/ttyUSB0')
@@ -13,12 +13,10 @@ yoff = 0
 cap = cv.VideoCapture(0)
 
 def serialWrite():
-        ser.write(xoff)
-        ser.write(yoff)
-        print (multiprocessing.current_process().name)
-
-p = multiprocessing.Process(name='daemon', target=serialWrite)
-p.start()
+        #ser.write(xoff)
+        #ser.write(yoff)
+        print ("1")
+p = Process(target=serialWrite)
 
 if not cap.isOpened() :
     print("no")
@@ -37,6 +35,8 @@ while True:
     xoff= x
     yoff = y
     cv.rectangle(img,(int(x-tempx),int(y-tempy)),(x+w,y+h+tempy),(0,255,0),2)
+ if not p.is_alive():
+         p.start()
  
  cv.imshow("test", img)
 
@@ -60,3 +60,4 @@ while True:
  cv.waitKey(30)
 
 ser.close()
+p.join()
