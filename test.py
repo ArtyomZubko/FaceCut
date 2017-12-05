@@ -28,7 +28,7 @@ while True:
      for (x,y,w,h) in faces:
          tempy = int((h-(h*0.56))/2)
          tempx = int((w-(w*0.86))/2)
-         cropped = img[y-tempy: (y + h + tempy), x-tempx: (x + w)]
+         cropped = img[y-tempy + 2: (y + h + tempy - 1), x-tempx + 2: (x + w - 1)]
          k=k+1
          cv.imshow("Cropped image" + str(k), cropped)
 
