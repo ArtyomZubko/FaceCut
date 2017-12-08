@@ -11,8 +11,8 @@ face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 filename = 0
 gx = 0
-servoPos = 0
 
+#ser.write(str(xdec ).encode('ascii'))
 cap = cv.VideoCapture(0)
 
 if not cap.isOpened() :
@@ -20,12 +20,13 @@ if not cap.isOpened() :
 
 
 def printPos(xp):
-    if xp > 230:
-        xdec = xp + 10
-        ser.write(str(xdec).encode('ascii'))
-    if xp <190:
-        xdec = xp - 10
-        ser.write(str(xdec).encode('ascii'))
+    if xp > 0 and xp < 180:
+        #xdec = 90
+        ser.write(str(xp).encode('ascii'))
+        print(str(xp).encode('ascii'))
+   # if xp <180:
+        #xdec = 180
+    #    ser.write(str(xp).encode('ascii'))
 
 
 
