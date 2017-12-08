@@ -1,25 +1,33 @@
 import sys, time, cv2 as cv, numpy as np
-from multiprocessing import Process
+import threading
 import serial
-face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
+
 ser = serial.Serial('/dev/ttyUSB0')
 ser.baudrate = 9600
-ser.close()
-ser.open()
+
+
+
+face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 filename = 0
-xoff= 0
-yoff = 0
-cap = cv.VideoCapture(0)
+gx = 0
+servoPos = 0
 
-def serialWrite():
-        #ser.write(xoff)
-        #ser.write(yoff)
-        print ("1")
-p = Process(target=serialWrite)
+cap = cv.VideoCapture(0)
 
 if not cap.isOpened() :
     print("no")
+
+
+def printPos(xp):
+    if xp > 230:
+        xdec = xp + 10
+        ser.write(str(xdec).encode('ascii'))
+    if xp <190:
+        xdec = xp - 10
+        ser.write(str(xdec).encode('ascii'))
+
+
 
 while True:
     
@@ -27,17 +35,19 @@ while True:
  if not ok: 
   break 
 
- faces = face_cascade.detectMultiScale(img, 1.3, 5)
+ 
+ faces = face_cascade.detectMultiScale(img, 1.3, 8)
 
  for (x,y,w,h) in faces:
     tempy = int((h-(h*0.56))/2)
     tempx = int((w-(w*0.86))/2)
-    xoff= x
-    yoff = y
     cv.rectangle(img,(int(x-tempx),int(y-tempy)),(x+w,y+h+tempy),(0,255,0),2)
- if not p.is_alive():
-         p.start()
- 
+    gx = x
+    
+    t1 = threading.Thread(target=printPos, args=(gx,))
+    if not t1.isAlive():
+        t1.start()
+    
  cv.imshow("test", img)
 
  if cv.waitKey(10) == 49:
@@ -45,7 +55,7 @@ while True:
      for (x,y,w,h) in faces:
          tempy = int((h-(h*0.56))/2)
          tempx = int((w-(w*0.86))/2)
-         cropped = img[y-tempy: (y + h + tempy), x-tempx: (x + w)]
+         cropped = img[y-tempy + 2: (y + h + tempy - 1), x-tempx + 2: (x + w - 1)]
          k=k+1
          cv.imshow("Cropped image" + str(k), cropped)
 
@@ -58,6 +68,3 @@ while True:
          cv.imwrite(str(filename + k) + ".png", resized_pic)
          
  cv.waitKey(30)
-
-ser.close()
-p.join()
