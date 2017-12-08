@@ -2,8 +2,8 @@ import sys, time, cv2 as cv, numpy as np
 import threading
 import serial
 
-ser = serial.Serial('/dev/ttyUSB0')
-ser.baudrate = 9600
+ser = serial.Serial('/dev/ttyUSB0',115200, timeout=1)
+
 
 
 
@@ -12,7 +12,6 @@ face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
 filename = 0
 gx = 0
 
-#ser.write(str(xdec ).encode('ascii'))
 cap = cv.VideoCapture(0)
 
 if not cap.isOpened() :
@@ -20,15 +19,11 @@ if not cap.isOpened() :
 
 
 def printPos(xp):
-    if xp > 0 and xp < 180:
-        #xdec = 90
-        ser.write(str(xp).encode('ascii'))
-        print(str(xp).encode('ascii'))
-   # if xp <180:
-        #xdec = 180
-    #    ser.write(str(xp).encode('ascii'))
+        xp = int(xp / 3.5)
+        x = int((xp - 0) * (0 - 128) / (128 - 0) + 128)
 
-
+        ser.write(chr(x).encode('ascii'))
+      
 
 while True:
     
