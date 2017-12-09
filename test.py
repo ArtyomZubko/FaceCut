@@ -1,74 +1,63 @@
 import sys, time, cv2 as cv, numpy as np
 import threading
 import serial
+import math
 
-ser = serial.Serial('COM8',9600)
-
-
-
+ser = serial.Serial('/dev/ttyUSB0',115200)
 
 face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 filename = 0
+
 servpos = 90
 xrecount = 0
+prevx = 0
 cap = cv.VideoCapture(1)
 
 if not cap.isOpened() :
     print("no")
+
 ser.write(chr(servpos).encode('ascii'))
 
-def printPos(xp):
-        ser.write(chr(xp).encode('ascii'))
-        print(xp)
+def printPos():
+    while True:
+        ser.write(chr(servpos).encode('ascii'))
         
+        
+
+t1 = threading.Thread(target=printPos, args=())
+t1.daemon = True
+t1.start()
 
 while True:
-    
- ok, img = cap.read() 
- if not ok: 
-  break 
+    xprev = xrecount  
+    ok, img = cap.read()
+ 
+    if not ok: 
+        break 
 
  
- faces = face_cascade.detectMultiScale(img, 1.3, 8)
+    faces = face_cascade.detectMultiScale(img, 1.3, 8)
  
- for (x,y,w,h) in faces:
-    tempy = int((h-(h*0.56))/2)
-    tempx = int((w-(w*0.86))/2)
-    cv.rectangle(img,(int(x-tempx),int(y-tempy)),(x+w,y+h+tempy),(0,255,0),2)
-    xrecount = int(x / 3.5)
+    for (x,y,w,h) in faces:
+        tempy = int((h-(h*0.56))/2)
+        tempx = int((w-(w*0.86))/2)
+        cv.rectangle(img,(int(x-tempx),int(y-tempy)),(x+w,y+h+tempy),(0,255,0),2)
+        
+        xrecount = int(x / 3.5)
+        
+        print(servpos)
+    offcet = np.abs(65-xrecount)
+    if xrecount < 65:    
+        if (servpos + offcet) < 120:
+            servpos += offcet
+    elif xrecount > 65: 
+        if (xrecount - offcet) > 0:
+            servpos -= offcet
 
-    if xrecount < 65:
-        if servpos+1 <= 120:
-            servpos = servpos + 1
-        t1 = threading.Thread(target=printPos, args=(servpos,))
-        if not t1.isAlive():
-            t1.start()
-    elif xrecount > 65:
-        if servpos-1 >= 0:
-            servpos = servpos - 1
-        t1 = threading.Thread(target=printPos, args=(servpos,))
-        if not t1.isAlive():
-            t1.start()
 
         
- cv.imshow("test", img)
+    cv.imshow("test", img)
 
- if cv.waitKey(10) == 49:
-     k=0
-     for (x,y,w,h) in faces:
-         tempy = int((h-(h*0.56))/2)
-         tempx = int((w-(w*0.86))/2)
-         cropped = img[y-tempy + 2: (y + h + tempy - 1), x-tempx + 2: (x + w - 1)]
-         k=k+1
-         cv.imshow("Cropped image" + str(k), cropped)
-
-         final_wide = 200 
-         r = float(final_wide) / cropped.shape[1]
-         dim = (final_wide, int(cropped.shape[0] * r))
-         resized_pic = cv.resize(cropped, dim, interpolation = cv.INTER_AREA)
-     
-         filename = int(time.time()) + 1 
-         cv.imwrite(str(filename + k) + ".png", resized_pic)
-         
- cv.waitKey(1)
+    
+    cv.waitKey(1)
