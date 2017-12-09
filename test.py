@@ -2,7 +2,7 @@ import sys, time, cv2 as cv, numpy as np
 import threading
 import serial
 
-ser = serial.Serial('/dev/ttyUSB0',115200, timeout=1)
+ser = serial.Serial('COM8',9600)
 
 
 
@@ -10,20 +10,18 @@ ser = serial.Serial('/dev/ttyUSB0',115200, timeout=1)
 face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 filename = 0
-gx = 0
-
-cap = cv.VideoCapture(0)
+servpos = 90
+xrecount = 0
+cap = cv.VideoCapture(1)
 
 if not cap.isOpened() :
     print("no")
-
+ser.write(chr(servpos).encode('ascii'))
 
 def printPos(xp):
-        xp = int(xp / 3.5)
-        x = int((xp - 0) * (0 - 128) / (128 - 0) + 128)
-
-        ser.write(chr(x).encode('ascii'))
-      
+        ser.write(chr(xp).encode('ascii'))
+        print(xp)
+        
 
 while True:
     
@@ -33,17 +31,27 @@ while True:
 
  
  faces = face_cascade.detectMultiScale(img, 1.3, 8)
-
+ 
  for (x,y,w,h) in faces:
     tempy = int((h-(h*0.56))/2)
     tempx = int((w-(w*0.86))/2)
     cv.rectangle(img,(int(x-tempx),int(y-tempy)),(x+w,y+h+tempy),(0,255,0),2)
-    gx = x
-    
-    t1 = threading.Thread(target=printPos, args=(gx,))
-    if not t1.isAlive():
-        t1.start()
-    
+    xrecount = int(x / 3.5)
+
+    if xrecount < 65:
+        if servpos+1 <= 120:
+            servpos = servpos + 1
+        t1 = threading.Thread(target=printPos, args=(servpos,))
+        if not t1.isAlive():
+            t1.start()
+    elif xrecount > 65:
+        if servpos-1 >= 0:
+            servpos = servpos - 1
+        t1 = threading.Thread(target=printPos, args=(servpos,))
+        if not t1.isAlive():
+            t1.start()
+
+        
  cv.imshow("test", img)
 
  if cv.waitKey(10) == 49:
@@ -63,4 +71,4 @@ while True:
          filename = int(time.time()) + 1 
          cv.imwrite(str(filename + k) + ".png", resized_pic)
          
- cv.waitKey(30)
+ cv.waitKey(1)
