@@ -12,6 +12,9 @@ filename = 0
 servpos = 90
 xrecount = 0
 prevx = 0
+servo_step = 3
+err = 20
+face_middlex = 0
 cap = cv.VideoCapture(1)
 
 if not cap.isOpened() :
@@ -32,6 +35,10 @@ t1.start()
 while True:
     xprev = xrecount  
     ok, img = cap.read()
+    
+    height, width, channels = img.shape 
+    img_centerx = width / 2
+
  
     if not ok: 
         break 
@@ -43,17 +50,19 @@ while True:
         tempy = int((h-(h*0.56))/2)
         tempx = int((w-(w*0.86))/2)
         cv.rectangle(img,(int(x-tempx),int(y-tempy)),(x+w,y+h+tempy),(0,255,0),2)
-        
-        xrecount = int(x / 3.5)
+        face_middlex = x + w/2
         
         print(servpos)
-    offcet = np.abs(65-xrecount)
-    if xrecount < 65:    
-        if (servpos + offcet) < 120:
-            servpos += offcet
-    elif xrecount > 65: 
-        if (xrecount - offcet) > 0:
-            servpos -= offcet
+        
+    if face_middlex > (img_centerx - err):
+        if servpos >=5:
+            servpos = servpos - servo_step
+    
+    if face_middlex < (img_centerx + err):
+        if servpos <=128:
+            servpos = servpos + servo_step    
+    
+
 
 
         
