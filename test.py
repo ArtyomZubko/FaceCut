@@ -9,7 +9,7 @@ face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 servpos = 90
 servo_step = 1
-err = 50
+err = 40
 face_middlex = 0
 cap = cv.VideoCapture(1)
 
@@ -40,7 +40,7 @@ while True:
     
     for (x,y,w,h) in faces:
         face_middlex = x + w/2
-        k = int(np.abs(img_centerx - x)*0.003)
+        k = int(np.abs(img_centerx - x)*0.005)
         if len(faces) != 0:                 
             if face_middlex > (img_centerx - err):
                 if servpos >=5 and (servpos - (servo_step + k)) > 0 :
@@ -54,4 +54,4 @@ while True:
         print(str(servpos)+"\t" + str(x))         
         
     cv.imshow("test", img)    
-    cv.waitKey(1)
+    cv.waitKey(100)
