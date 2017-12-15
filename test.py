@@ -11,6 +11,9 @@ servpos = 90
 servo_step = 1
 err = 40
 face_middlex = 0
+ticka = 0
+tickb = 0
+startflag= False
 cap = cv.VideoCapture(1)
 
 if not cap.isOpened() :
@@ -22,12 +25,11 @@ def printPos():
     while True:
         #print(servpos)
         ser.write(chr(servpos).encode('ascii'))
-                
-t1 = threading.Thread(target=printPos, args=())
-t1.daemon = True
-t1.start()
 
+t1 = threading.Thread(target=printPos, args=())
+t1.start()
 while True:
+        
     ok, img = cap.read()
     
     height, width, channels = img.shape 
@@ -40,18 +42,20 @@ while True:
     
     for (x,y,w,h) in faces:
         face_middlex = x + w/2
-        k = int(np.abs(img_centerx - x)*0.005)
+        k = int(np.abs(img_centerx - x)*0.009)
         if len(faces) != 0:                 
             if face_middlex > (img_centerx - err):
                 if servpos >=5 and (servpos - (servo_step + k)) > 0 :
-                    servpos -= servo_step + k
-            
+                    servpos = servpos - servo_step + k
+                    #ticka = ticka + 1
+                
             if face_middlex < (img_centerx + err):
                 if servpos <=125 and (servpos + (servo_step + k)) < 127:
-                    servpos += servo_step + k
-        
+                    servpos = servpos + servo_step + k
+                    #tickb = tickb + 1
         cv.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
-        print(str(servpos)+"\t" + str(x))         
+        
+        #print(str(ticka)+"\t" + str(tickb))         
         
     cv.imshow("test", img)    
-    cv.waitKey(100)
+    cv.waitKey(1)
